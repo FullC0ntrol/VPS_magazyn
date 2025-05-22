@@ -1,25 +1,247 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magazyn Plików</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magazyn Plików | Cloud Storage</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --accent: #3B82F6;
+            --dark: #1F2937;
+        }
+        .file-input::-webkit-file-upload-button {
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        .file-input::-webkit-file-upload-button:hover {
+            background: #2563EB;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .file-item {
+            transition: background-color 0.2s ease;
+        }
+        .file-item:hover {
+            background-color: #374151;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-2xl">
-        <h1 class="text-3xl font-bold text-white mb-6 text-center">Magazyn Plików</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-4">
-            <div class="flex items-center justify-center bg-gray-700 rounded-lg p-4">
-                <input type="file" name="myFile" required class="text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-orange-500 file:text-white file:hover:bg-orange-600 file:cursor-pointer">
-                <button type="submit" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-md hover:bg-orange-600 transition-colors duration-300">Wyślij Plik</button>
-            </div>
-        </form>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4 font-['Inter']">
+    <div class="container max-w-3xl w-full bg-gray-800 rounded-xl shadow-2xl p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white">Magazyn Plików</h1>
+            <p class="text-gray-400 mt-2">Bezpieczne przechowywanie Twoich plików w chmurze</p>
+        </header>
 
-        <h2 class="text-2xl font-semibold text-white mt-8 mb-4">Twoje Pliki</h2>
-        <ul id="fileList" class="space-y-2"></ul>
+        <div class="upload-card bg-gray-700 rounded-lg p-6 mb-8">
+            <div class="upload-area text-center">
+                <div class="upload-icon text-4xl text-gray-300 mb-4">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3 class="text-lg font-medium text-white mb-4">Przeciągnij i upuść pliki tutaj lub kliknij, aby wybrać</h3>
+                <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm" class="flex items-center justify-center gap-4">
+                    <input type="file" name="myFile" id="fileInput" class="file-input text-gray-300" required />
+                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-upload mr-2"></i>Wyślij plik
+                    </button>
+                </form>
+            </div>
+            <div class="progress-container hidden mt-4 h-2 bg-gray-600 rounded-full overflow-hidden" id="progressContainer">
+                <div class="progress-bar h-full bg-blue-600" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="files-section">
+            <h2 class="text-2xl font-semibold text-white mb-4"><i class="fas fa-folder-open mr-2"></i>Twoje pliki</h2>
+            <ul class="file-list space-y-2" id="fileList">
+                <li class="empty-state text-gray-400 text-center py-8">
+                    <i class="fas fa-box-open text-3xl mb-2"></i>
+                    <p>Brak plików. Dodaj swój pierwszy plik!</p>
+                </li>
+            </ul>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Add file to list
+        function addFileToList(name) {
+            const fileList = document.getElementById("fileList");
+            const fileExt = name.split(".").pop().toLowerCase();
+            let iconClass = "fa-file";
+
+            const fileIcons = {
+                pdf: "fa-file-pdf",
+                doc: "fa-file-word",
+                docx: "fa-file-word",
+                xls: "fa-file-excel",
+                xlsx: "fa-file-excel",
+                ppt: "fa-file-powerpoint",
+                pptx: "fa-file-powerpoint",
+                jpg: "fa-file-image",
+                jpeg: "fa-file-image",
+                png: "fa-file-image",
+                gif: "fa-file-image",
+                mp3: "fa-file-audio",
+                wav: "fa-file-audio",
+                mp4: "fa-file-video",
+                avi: "fa-file-video",
+                zip: "fa-file-archive",
+                rar: "fa-file-archive",
+                txt: "fa-file-alt",
+                html: "fa-file-code",
+                css: "fa-file-code",
+                js: "fa-file-code",
+            };
+
+            if (fileIcons[fileExt]) {
+                iconClass = fileIcons[fileExt];
+            }
+
+            const listItem = document.createElement("li");
+            listItem.className = "file-item flex justify-between items-center bg-gray-700 p-4 rounded-lg";
+            listItem.innerHTML = `
+                <div class="file-info flex items-center gap-3">
+                    <div class="file-icon text-xl text-gray-300">
+                        <i class="fas ${iconClass}"></i>
+                    </div>
+                    <div>
+                        <div class="file-name text-white">${name}</div>
+                    </div>
+                </div>
+                <div class="file-actions flex gap-2">
+                    <a href="/uploads/${encodeURIComponent(name)}" download class="btn-action bg-blue-600 text-white p-2 rounded hover:bg-blue-700" title="Pobierz">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <button class="btn-action bg-red-600 text-white p-2 rounded hover:bg-red-700" title="Usuń" onclick="deleteFile('${encodeURIComponent(name)}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            fileList.prepend(listItem);
+        }
+
+        // Fetch files from server
+        function fetchFiles() {
+            fetch('/files')
+                .then(response => response.json())
+                .then(files => {
+                    const fileList = document.getElementById("fileList");
+                    fileList.innerHTML = ''; // Clear list
+                    if (files.length === 0) {
+                        fileList.innerHTML = `
+                            <li class="empty-state text-gray-400 text-center py-8">
+                                <i class="fas fa-box-open text-3xl mb-2"></i>
+                                <p>Brak plików. Dodaj swój pierwszy plik!</p>
+                            </li>
+                        `;
+                    } else {
+                        files.forEach(file => addFileToList(file));
+                    }
+                })
+                .catch(error => console.error('Error fetching files:', error));
+        }
+
+        // Delete file
+        function deleteFile(filename) {
+            fetch(`/delete/${filename}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fetchFiles(); // Refresh file list
+                    } else {
+                        alert('Błąd podczas usuwania pliku: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error deleting file:', error));
+        }
+
+        // Simulate upload progress
+        function simulateUpload() {
+            const progressContainer = document.getElementById("progressContainer");
+            const progressBar = document.getElementById("progressBar");
+            progressContainer.classList.remove("hidden");
+            progressBar.style.width = "0%";
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = progress + "%";
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progressContainer.classList.add("hidden");
+                }
+            }, 100);
+        }
+
+        // Handle form submission
+        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Wybierz plik do przesłania!");
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            simulateUpload();
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (response.ok) {
+                    fileInput.value = ''; // Reset input
+                    fetchFiles(); // Refresh file list
+                } else {
+                    alert('Błąd podczas przesyłania pliku.');
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('Wystąpił błąd podczas przesyłania pliku.');
+            }
+        });
+
+        // Handle drag-and-drop
+        const uploadCard = document.querySelector(".upload-card");
+        uploadCard.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadCard.classList.add("border-blue-500", "bg-blue-500/10");
+        });
+
+        uploadCard.addEventListener("dragleave", () => {
+            uploadCard.classList.remove("border-blue-500", "bg-blue-500/10");
+        });
+
+        uploadCard.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove("border-blue-500", "bg-blue-500/10");
+            const fileInput = document.getElementById("fileInput");
+            fileInput.files = e.dataTransfer.files;
+            document.getElementById("uploadForm").dispatchEvent(new Event("submit"));
+        });
+
+        // Load files on page load
+        document.addEventListener('DOMContentLoaded', fetchFiles);
+    </script>
 </body>
 </html>

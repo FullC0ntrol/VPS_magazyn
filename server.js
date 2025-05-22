@@ -12,6 +12,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(express.json()); // potrzebne do odbierania JSON-a
 
 app.post('/upload', upload.single('myFile'), (req, res) => {
+    console.log("dawda");
   const oldPath = req.file.path;
   const newPath = path.join('uploads', req.file.originalname);
   fs.renameSync(oldPath, newPath);
@@ -20,6 +21,7 @@ app.post('/upload', upload.single('myFile'), (req, res) => {
 
 app.get('/files', (req, res) => {
   const files = fs.readdirSync('uploads');
+  console.log(files);
   res.json(files);
 });
 
