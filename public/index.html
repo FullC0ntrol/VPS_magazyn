@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magazyn Plików</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-2xl">
+        <h1 class="text-3xl font-bold text-white mb-6 text-center">Magazyn Plików</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-4">
+            <div class="flex items-center justify-center bg-gray-700 rounded-lg p-4">
+                <input type="file" name="myFile" required class="text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-orange-500 file:text-white file:hover:bg-orange-600 file:cursor-pointer">
+                <button type="submit" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-md hover:bg-orange-600 transition-colors duration-300">Wyślij Plik</button>
+            </div>
+        </form>
+
+        <h2 class="text-2xl font-semibold text-white mt-8 mb-4">Twoje Pliki</h2>
+        <ul id="fileList" class="space-y-2"></ul>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

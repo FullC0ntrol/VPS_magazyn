@@ -1,0 +1,26 @@
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+#fileList li {
+    background: #1F2937;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #D1D5DB;
+    transition: background-color 0.3s ease;
+}
+
+#fileList li:hover {
+    background: #374151;
+}
+
+a {
+    color: #60A5FA;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #3B82F6;
+}
